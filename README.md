@@ -2,6 +2,8 @@
 
 Very experimental project to try and scrape the web and cluster articles into similar events.
 
+At the moment the whole thing doesn't work very well. Seems similarity matrix gives false positives.
+
 ## Usage
 
 ### 0. Clone repo
@@ -29,7 +31,7 @@ $ python similarities.python
 
 ```bash
 $ cd ../cluster
-$ go run main.go
+$ go run main.go -threshold 0.9
 ```
 
 ## Improvements

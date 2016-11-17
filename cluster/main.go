@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,11 +10,12 @@ import (
 	"github.com/smaxwellstewart/articlescrape/article"
 )
 
+var ClusterThreshold = flag.Float64("threshold", 0.9, "cluster similarity score threshold")
+
 const (
 	// NOTE: these would need to be fine tuned
-	WithinDayScore   = 0.0
-	WithinWeekScore  = 0.0
-	ClusterThreshold = 0.9
+	WithinDayScore  = 0.0
+	WithinWeekScore = 0.0
 	// Time constants
 	DayInSeconds  = 60 * 60 * 24
 	WeekInSeconds = 60 * 60 * 24 * 7
@@ -28,6 +30,7 @@ type Article struct {
 // Similarities is a matrix of similarity scores
 type Similarities [][]float64
 
+// NOTE: not currently in use but could be used to implement full decision tree
 func InCluster(a Article, b Article, similarities [][]float64) bool {
 	// NOTE: time score would probably be better as a continuous function
 	delta := a.Time - b.Time
@@ -38,10 +41,12 @@ func InCluster(a Article, b Article, similarities [][]float64) bool {
 		timeScore = WithinWeekScore
 	}
 	similarityScore := similarities[a.Index][b.Index]
-	return (timeScore + similarityScore) > ClusterThreshold
+	return (timeScore + similarityScore) > *ClusterThreshold
 }
 
 func main() {
+	flag.Parse()
+
 	file, err := ioutil.ReadFile("../similarities.json")
 	if err != nil {
 		log.Fatal("Could not load ../similarities.json:", err)
@@ -66,7 +71,7 @@ func main() {
 	for i := 0; i < len(articles); i++ {
 		for j := i + 1; j < len(articles); j++ {
 
-			if s[i][j] > ClusterThreshold {
+			if s[i][j] > *ClusterThreshold {
 				fmt.Printf("Similar articles found: %s | %s\n", articles[i].Title, articles[j].Title)
 				fmt.Printf("(%d, %d) -> %f\n", i, j, s[i][j])
 			}
